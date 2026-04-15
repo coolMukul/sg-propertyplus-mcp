@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# OS files
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# IDE
+.vscode/
+.idea/
+
+# Internal docs (not for git)
+mukDocs/
+
+# Exported CSV files (test output)
+exports/
+
+# AI assistant config files
+.claude/
+.claude*
+CLAUDE.md
