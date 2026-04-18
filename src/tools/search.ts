@@ -95,8 +95,8 @@ export function registerSearchTools(server: McpServer, state: SessionState): voi
     "search_area_by_coords",
     "Search land use and zoning info near specific coordinates. Skips geocoding — use when you already have lat/lon.",
     {
-      latitude: z.number().describe("Latitude (WGS84)"),
-      longitude: z.number().describe("Longitude (WGS84)"),
+      latitude: z.coerce.number().describe("Latitude (WGS84)"),
+      longitude: z.coerce.number().describe("Longitude (WGS84)"),
       radiusMeters: z
         .number()
         .optional()

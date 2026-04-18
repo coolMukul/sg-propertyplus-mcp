@@ -65,3 +65,7 @@ export const overpassLimiter = new RateLimiter(5000);
 // LTA DataMall: no published rate limit, reasonable use expected.
 // 200ms between requests is conservative for pagination bursts.
 export const ltaLimiter = new RateLimiter(200);
+
+// SingStat Table Builder: no published rate limit.
+// 500ms base pacing; 15s backoff on 429/503 (see SINGSTAT_BACKOFF_MS in config).
+export const singstatLimiter = new RateLimiter(500);

@@ -16,6 +16,10 @@ import {
   BusStopInfo,
   BusArrivalService,
   TaxiStandInfo,
+  SchoolInfo,
+  DemographicSnapshot,
+  DemographicMetric,
+  DemographicDimension,
 } from "./types.js";
 
 // --- Markdown tables ---
@@ -513,5 +517,127 @@ export function formatTaxiStandCsv(records: TaxiStandInfo[]): string {
       String(r.lat), String(r.lon),
     ].map(csvEscape).join(","),
   );
+  return [header, ...rows].join("\n");
+}
+
+// --- School info ---
+
+function formatPrograms(s: SchoolInfo): string {
+  const programs: string[] = [];
+  if (s.sap) programs.push("SAP");
+  if (s.ip) programs.push("IP");
+  if (s.gifted) programs.push("GEP");
+  if (s.autonomous) programs.push("Auto");
+  return programs.length > 0 ? programs.join(", ") : "—";
+}
+
+export function formatSchoolTable(records: SchoolInfo[]): string {
+  if (records.length === 0) {
+    return "No schools found matching your criteria.";
+  }
+
+  const header = "| School | Level | Zone | Cluster | Nature | Programs | Mother Tongues |";
+  const divider = "|---|---|---|---|---|---|---|";
+  const rows = records.map((s) =>
+    `| ${s.schoolName} | ${s.level} | ${s.zone} | ${s.cluster} | ${s.nature} | ${formatPrograms(s)} | ${s.motherTongues.join(", ") || "—"} |`,
+  );
+
+  return [header, divider, ...rows].join("\n");
+}
+
+export function formatSchoolCsv(records: SchoolInfo[]): string {
+  const header = "School Name,Address,Postal Code,Level,Zone,Cluster,Type,Nature,Session,SAP,IP,GEP,Autonomous,Mother Tongues,Telephone,Email,URL,Nearest MRT,Bus Services";
+  const rows = records.map((s) =>
+    [
+      s.schoolName, s.address, s.postalCode, s.level, s.zone, s.cluster,
+      s.type, s.nature, s.session,
+      s.sap ? "Yes" : "No", s.ip ? "Yes" : "No",
+      s.gifted ? "Yes" : "No", s.autonomous ? "Yes" : "No",
+      s.motherTongues.join("; "),
+      s.telephone, s.email, s.url, s.nearestMrt, s.busServices,
+    ].map(csvEscape).join(","),
+  );
+  return [header, ...rows].join("\n");
+}
+
+// --- Demographic snapshot ---
+
+function formatCount(value: number | null, uom: string): string {
+  if (value === null) return "—";
+  const rounded = Math.round(value);
+  if (uom.toLowerCase() === "thousands") return `${rounded.toLocaleString()}k`;
+  return rounded.toLocaleString();
+}
+
+function formatMetric(m: DemographicMetric, uom: string, indent: number): string {
+  const pad = "  ".repeat(indent);
+  const pct = m.pctOfTotal !== undefined ? ` (${m.pctOfTotal.toFixed(1)}%)` : "";
+  const lines = [`${pad}- ${m.label}: ${formatCount(m.value, uom)}${pct}`];
+  if (m.children && m.children.length > 0) {
+    for (const c of m.children) {
+      lines.push(formatMetric(c, uom, indent + 1));
+    }
+  }
+  return lines.join("\n");
+}
+
+function formatDimension(dim: DemographicDimension): string {
+  const header = `**${dim.name}** — ${dim.source}`;
+  const totalLine = `Total: ${formatCount(dim.total, dim.uom)}`;
+  const metricLines = dim.metrics.map((m) => formatMetric(m, dim.uom, 0)).join("\n");
+  return `${header}\n${totalLine}\n${metricLines}`;
+}
+
+export function formatDemographicSnapshot(snap: DemographicSnapshot): string {
+  if (snap.dimensions.length === 0) {
+    return `No demographic data available for "${snap.planningArea}".`;
+  }
+
+  const parts = [`# Demographic snapshot — ${snap.planningArea}`];
+  for (const dim of snap.dimensions) {
+    parts.push(formatDimension(dim));
+  }
+  if (snap.unavailable.length > 0) {
+    parts.push(`_Unavailable: ${snap.unavailable.join(", ")}_`);
+  }
+  return parts.join("\n\n");
+}
+
+/** CSV form: long-format rows — one per (dimension, metric, sub-metric). */
+export function formatDemographicCsv(snap: DemographicSnapshot): string {
+  const header = "Planning Area,Dimension,Source,Metric,Sub-Metric,Value,Percent of Total,Unit";
+  const rows: string[] = [];
+
+  for (const dim of snap.dimensions) {
+    rows.push(
+      [
+        snap.planningArea, dim.name, dim.source, "Total", "",
+        dim.total === null ? "" : String(dim.total),
+        "", dim.uom,
+      ].map(csvEscape).join(","),
+    );
+    for (const m of dim.metrics) {
+      rows.push(
+        [
+          snap.planningArea, dim.name, dim.source, m.label, "",
+          m.value === null ? "" : String(m.value),
+          m.pctOfTotal === undefined ? "" : m.pctOfTotal.toFixed(2),
+          dim.uom,
+        ].map(csvEscape).join(","),
+      );
+      if (m.children) {
+        for (const c of m.children) {
+          rows.push(
+            [
+              snap.planningArea, dim.name, dim.source, m.label, c.label,
+              c.value === null ? "" : String(c.value),
+              "", dim.uom,
+            ].map(csvEscape).join(","),
+          );
+        }
+      }
+    }
+  }
+
   return [header, ...rows].join("\n");
 }

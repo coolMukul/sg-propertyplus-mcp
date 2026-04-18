@@ -171,7 +171,8 @@ export async function geocodeAddress(
   if (first.POSTAL && first.POSTAL !== "NIL") parts.push(`Singapore ${first.POSTAL}`);
   const displayName = parts.length > 0 ? parts.join(", ") : first.ADDRESS;
 
-  return { lat, lon, displayName };
+  const postalCode = first.POSTAL && first.POSTAL !== "NIL" ? first.POSTAL : undefined;
+  return { lat, lon, displayName, postalCode };
 }
 
 // ---------------------------------------------------------------------------
@@ -201,6 +202,7 @@ export async function reverseGeocode(
   lat: number,
   lon: number,
   onWait?: (delayMs: number) => void | Promise<void>,
+  bufferMeters: number = 500,
 ): Promise<ReverseGeocodeResult | null> {
   const token = await getToken();
   if (!token) {
@@ -210,7 +212,12 @@ export async function reverseGeocode(
 
   await onemapLimiter.wait(onWait);
 
-  const url = `${ONEMAP_BASE_URL}/api/public/revgeocode?location=${lat},${lon}&addressType=All`;
+  // buffer (0-500m) controls how far around the point OneMap looks for matches.
+  // Without a buffer, queries on road-centre coordinates match the road itself
+  // (POSTALCODE=NIL). A 500m buffer yields multiple nearby features — we then
+  // pick the first one with a real postal code.
+  const clampedBuffer = Math.max(0, Math.min(500, Math.round(bufferMeters)));
+  const url = `${ONEMAP_BASE_URL}/api/public/revgeocode?location=${lat},${lon}&buffer=${clampedBuffer}&addressType=All`;
   const res = await fetch(url, {
     headers: { Authorization: token },
   });
@@ -249,7 +256,10 @@ function parseReverseGeocodeResponse(
     return null;
   }
 
-  const info = data.GeocodeInfo[0];
+  // Prefer the first entry with a real postal code (buffer queries return
+  // multiple results; the nearest one may be a road with POSTALCODE=NIL).
+  const withPostal = data.GeocodeInfo.find((g) => g.POSTALCODE && g.POSTALCODE !== "NIL");
+  const info = withPostal ?? data.GeocodeInfo[0];
   return {
     buildingName: info.BUILDINGNAME !== "NIL" ? info.BUILDINGNAME : null,
     block: info.BLOCK !== "NIL" ? info.BLOCK : null,

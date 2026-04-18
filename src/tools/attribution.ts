@@ -9,6 +9,7 @@ const ATTRIBUTIONS = [
   "(c) Urban Redevelopment Authority — https://www.ura.gov.sg",
   "Contains information from data.gov.sg accessed under the Singapore Open Data Licence",
   "Contains information from LTA DataMall accessed under the Singapore Open Data Licence — https://datamall.lta.gov.sg",
+  "Data from Singapore Department of Statistics — https://www.singstat.gov.sg",
 ];
 
 export function registerAttributionTools(server: McpServer): void {

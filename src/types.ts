@@ -1,10 +1,11 @@
 // Shared interfaces for SG-PropertyPlus MCP server.
 
-/** Geocoding result from Nominatim */
+/** Geocoding result from Nominatim or OneMap */
 export interface GeocodingResult {
   lat: number;
   lon: number;
   displayName: string;
+  postalCode?: string;  // available from OneMap search, not from Nominatim
 }
 
 /** A land parcel from URA ArcGIS Master Plan 2019 */
@@ -209,18 +210,71 @@ export interface ReverseGeocodeResult {
   lon: number;
 }
 
+/** A school from MOE General Information of Schools (data.gov.sg) */
+export interface SchoolInfo {
+  schoolName: string;
+  address: string;
+  postalCode: string;
+  level: string;          // "PRIMARY", "SECONDARY (S1-S5)", "JUNIOR COLLEGE", etc.
+  zone: string;           // "NORTH", "SOUTH", "EAST", "WEST"
+  cluster: string;        // dgp_code, e.g. "WOODLANDS", "TAMPINES"
+  type: string;           // "GOVERNMENT SCHOOL", "GOVERNMENT-AIDED SCH", etc.
+  nature: string;         // "CO-ED SCHOOL", "BOYS' SCHOOL", "GIRLS' SCHOOL"
+  session: string;        // "FULL DAY", "SINGLE SESSION"
+  sap: boolean;
+  autonomous: boolean;
+  gifted: boolean;
+  ip: boolean;
+  motherTongues: string[];     // e.g. ["CHINESE", "MALAY", "TAMIL"]
+  telephone: string;
+  email: string;
+  url: string;
+  nearestMrt: string;
+  busServices: string;
+}
+
+/** One metric within a demographic dimension (e.g. "HDB Dwellings", "3-Room Flats") */
+export interface DemographicMetric {
+  label: string;
+  value: number | null;
+  pctOfTotal?: number;             // only set for top-level metrics
+  children?: DemographicMetric[];  // one level of nesting (e.g. HDB subtypes)
+}
+
+/** A single dimension of demographic data for one planning area */
+export interface DemographicDimension {
+  name: string;          // e.g. "Type of Dwelling"
+  source: string;        // e.g. "Census of Population 2020"
+  lastUpdated?: string;  // e.g. "18/06/2021"
+  uom: string;           // e.g. "Number", "Thousands"
+  total: number | null;  // total for this dimension at this area
+  metrics: DemographicMetric[];
+}
+
+/** Combined demographic snapshot for one planning area */
+export interface DemographicSnapshot {
+  planningArea: string;
+  dimensions: DemographicDimension[];
+  unavailable: string[];  // dimension labels that couldn't be fetched
+}
+
 /** Stored state for the last search performed */
 export interface SearchState {
   type: "land-use" | "hdb-resale" | "private-transaction" | "private-rental"
     | "developer-sales" | "rental-median" | "pipeline"
     | "carpark-availability" | "carpark-details" | "season-carpark"
     | "planning-decision" | "nearby-amenities"
-    | "nearest-transport" | "bus-arrival" | "taxi-availability";
+    | "nearest-transport" | "bus-arrival" | "taxi-availability"
+    | "school-info"
+    | "area-comparison"
+    | "demographics";
   query: Record<string, unknown>;
   results: LandParcel[] | HdbResaleRecord[] | PrivateTransaction[]
     | PrivateRental[] | DeveloperSale[] | RentalMedian[] | PipelineProject[]
     | CarParkAvailability[] | CarParkDetail[] | SeasonCarPark[]
     | PlanningDecision[] | NearbyAmenity[]
-    | BusStopInfo[] | BusArrivalService[] | TaxiStandInfo[];
+    | BusStopInfo[] | BusArrivalService[] | TaxiStandInfo[]
+    | SchoolInfo[]
+    | DemographicSnapshot[];
   timestamp: string;
 }

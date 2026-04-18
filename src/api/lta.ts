@@ -141,27 +141,44 @@ async function ltaFetchAll<T>(
 let busStopCache: RawBusStop[] | null = null;
 let taxiStandCache: RawTaxiStand[] | null = null;
 
+// Fetch-once guards: if a fetch is already in flight, concurrent callers
+// wait for the same promise instead of each hitting the API independently.
+let busStopFetch: Promise<{ records: RawBusStop[]; error?: string }> | null = null;
+let taxiStandFetch: Promise<{ records: RawTaxiStand[]; error?: string }> | null = null;
+
 async function getAllBusStops(
   onProgress?: (fetched: number) => void | Promise<void>,
   onWait?: () => void | Promise<void>,
 ): Promise<{ records: RawBusStop[]; error?: string }> {
   if (busStopCache) return { records: busStopCache };
-  const result = await ltaFetchAll<RawBusStop>("/BusStops", onProgress, onWait);
-  if (!result.error && result.records.length > 0) {
-    busStopCache = result.records;
-  }
-  return result;
+  if (busStopFetch) return busStopFetch;
+
+  busStopFetch = (async () => {
+    const result = await ltaFetchAll<RawBusStop>("/BusStops", onProgress, onWait);
+    if (!result.error && result.records.length > 0) {
+      busStopCache = result.records;
+    }
+    return result;
+  })();
+
+  try { return await busStopFetch; } finally { busStopFetch = null; }
 }
 
 async function getAllTaxiStands(
   onWait?: () => void | Promise<void>,
 ): Promise<{ records: RawTaxiStand[]; error?: string }> {
   if (taxiStandCache) return { records: taxiStandCache };
-  const result = await ltaFetchAll<RawTaxiStand>("/TaxiStands", undefined, onWait);
-  if (!result.error && result.records.length > 0) {
-    taxiStandCache = result.records;
-  }
-  return result;
+  if (taxiStandFetch) return taxiStandFetch;
+
+  taxiStandFetch = (async () => {
+    const result = await ltaFetchAll<RawTaxiStand>("/TaxiStands", undefined, onWait);
+    if (!result.error && result.records.length > 0) {
+      taxiStandCache = result.records;
+    }
+    return result;
+  })();
+
+  try { return await taxiStandFetch; } finally { taxiStandFetch = null; }
 }
 
 // --- Public API ---

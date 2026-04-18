@@ -67,12 +67,12 @@ export function registerUraTools(server: McpServer, state: SessionState): void {
         .describe("Start date in MMYY format (e.g. '0123' for Jan 2023)"),
       dateTo: z.string().optional()
         .describe("End date in MMYY format (e.g. '1224' for Dec 2024)"),
-      minPrice: z.number().optional().describe("Minimum price in SGD"),
-      maxPrice: z.number().optional().describe("Maximum price in SGD"),
-      minArea: z.number().optional().describe("Minimum area in sqm"),
-      maxArea: z.number().optional().describe("Maximum area in sqm"),
+      minPrice: z.coerce.number().optional().describe("Minimum price in SGD"),
+      maxPrice: z.coerce.number().optional().describe("Maximum price in SGD"),
+      minArea: z.coerce.number().optional().describe("Minimum area in sqm"),
+      maxArea: z.coerce.number().optional().describe("Maximum area in sqm"),
       tenure: z.string().optional().describe("Filter by tenure (e.g. 'Freehold', '99')"),
-      limit: z.number().optional().default(PRIVATE_TXN_LIMIT_DEFAULT)
+      limit: z.coerce.number().optional().default(PRIVATE_TXN_LIMIT_DEFAULT)
         .describe(`Max results to return after filtering (default ${PRIVATE_TXN_LIMIT_DEFAULT})`),
     },
     async (params, extra: ToolExtra) => {
@@ -151,9 +151,9 @@ export function registerUraTools(server: McpServer, state: SessionState): void {
         .describe("Filter by property type (e.g. 'Non-landed Properties', 'Terrace House')"),
       noOfBedRoom: z.string().optional()
         .describe("Filter by number of bedrooms (e.g. '3', '4', 'NA')"),
-      minRent: z.number().optional().describe("Minimum monthly rent in SGD"),
-      maxRent: z.number().optional().describe("Maximum monthly rent in SGD"),
-      limit: z.number().optional().default(PRIVATE_TXN_LIMIT_DEFAULT)
+      minRent: z.coerce.number().optional().describe("Minimum monthly rent in SGD"),
+      maxRent: z.coerce.number().optional().describe("Maximum monthly rent in SGD"),
+      limit: z.coerce.number().optional().default(PRIVATE_TXN_LIMIT_DEFAULT)
         .describe(`Max results to return (default ${PRIVATE_TXN_LIMIT_DEFAULT})`),
     },
     async (params, extra: ToolExtra) => {
@@ -218,7 +218,7 @@ export function registerUraTools(server: McpServer, state: SessionState): void {
         .describe("Filter by project name (partial match)"),
       marketSegment: z.enum(["CCR", "RCR", "OCR"]).optional()
         .describe("Market segment filter"),
-      limit: z.number().optional().default(PRIVATE_TXN_LIMIT_DEFAULT)
+      limit: z.coerce.number().optional().default(PRIVATE_TXN_LIMIT_DEFAULT)
         .describe(`Max results (default ${PRIVATE_TXN_LIMIT_DEFAULT})`),
     },
     async (params, extra: ToolExtra) => {
@@ -240,7 +240,7 @@ export function registerUraTools(server: McpServer, state: SessionState): void {
       // Client-side filter
       let filtered = records;
       if (district) filtered = filtered.filter((r) => r.district === district);
-      if (project) filtered = filtered.filter((r) => r.project.toUpperCase().includes(project.toUpperCase()));
+      if (project) filtered = filtered.filter((r) => r.project?.toUpperCase().includes(project.toUpperCase()));
       if (marketSegment) filtered = filtered.filter((r) => r.marketSegment === marketSegment);
 
       // Sort by soldInMonth descending (most active first)
@@ -282,7 +282,7 @@ export function registerUraTools(server: McpServer, state: SessionState): void {
         .describe("Filter by postal district number"),
       project: z.string().optional()
         .describe("Filter by project name (partial match)"),
-      limit: z.number().optional().default(PRIVATE_TXN_LIMIT_DEFAULT)
+      limit: z.coerce.number().optional().default(PRIVATE_TXN_LIMIT_DEFAULT)
         .describe(`Max results (default ${PRIVATE_TXN_LIMIT_DEFAULT})`),
     },
     async (params, extra: ToolExtra) => {
@@ -303,7 +303,7 @@ export function registerUraTools(server: McpServer, state: SessionState): void {
 
       let filtered = records;
       if (district) filtered = filtered.filter((r) => r.district === district);
-      if (project) filtered = filtered.filter((r) => r.project.toUpperCase().includes(project.toUpperCase()));
+      if (project) filtered = filtered.filter((r) => r.project?.toUpperCase().includes(project.toUpperCase()));
 
       // Sort by median descending
       filtered.sort((a, b) => b.median - a.median);
@@ -344,7 +344,7 @@ export function registerUraTools(server: McpServer, state: SessionState): void {
         .describe("Filter by postal district number"),
       project: z.string().optional()
         .describe("Filter by project name (partial match)"),
-      limit: z.number().optional().default(PRIVATE_TXN_LIMIT_DEFAULT)
+      limit: z.coerce.number().optional().default(PRIVATE_TXN_LIMIT_DEFAULT)
         .describe(`Max results (default ${PRIVATE_TXN_LIMIT_DEFAULT})`),
     },
     async (params, extra: ToolExtra) => {
@@ -365,7 +365,7 @@ export function registerUraTools(server: McpServer, state: SessionState): void {
 
       let filtered = records;
       if (district) filtered = filtered.filter((r) => r.district === district);
-      if (project) filtered = filtered.filter((r) => r.project.toUpperCase().includes(project.toUpperCase()));
+      if (project) filtered = filtered.filter((r) => r.project?.toUpperCase().includes(project.toUpperCase()));
 
       // Sort by totalUnits descending
       filtered.sort((a, b) => b.totalUnits - a.totalUnits);
@@ -406,7 +406,7 @@ export function registerUraTools(server: McpServer, state: SessionState): void {
         .describe("Filter by car park number (e.g. 'A0004')"),
       lotType: z.string().optional()
         .describe("Filter by lot type: 'C' (car), 'M' (motorcycle), 'H' (heavy vehicle)"),
-      limit: z.number().optional().default(PRIVATE_TXN_LIMIT_DEFAULT)
+      limit: z.coerce.number().optional().default(PRIVATE_TXN_LIMIT_DEFAULT)
         .describe(`Max results (default ${PRIVATE_TXN_LIMIT_DEFAULT})`),
     },
     async (params, extra: ToolExtra) => {
@@ -426,8 +426,8 @@ export function registerUraTools(server: McpServer, state: SessionState): void {
       }
 
       let filtered = records;
-      if (carparkNo) filtered = filtered.filter((r) => r.carparkNo === carparkNo.toUpperCase());
-      if (lotType) filtered = filtered.filter((r) => r.lotType === lotType.toUpperCase());
+      if (carparkNo) filtered = filtered.filter((r) => r.carparkNo === carparkNo?.toUpperCase());
+      if (lotType) filtered = filtered.filter((r) => r.lotType === lotType?.toUpperCase());
 
       const truncated = filtered.slice(0, limit);
 
@@ -466,7 +466,7 @@ export function registerUraTools(server: McpServer, state: SessionState): void {
         .describe("Filter by car park name (partial match, e.g. 'ALIWAL')"),
       vehCat: z.string().optional()
         .describe("Filter by vehicle category (e.g. 'Car', 'Motorcycle')"),
-      limit: z.number().optional().default(PRIVATE_TXN_LIMIT_DEFAULT)
+      limit: z.coerce.number().optional().default(PRIVATE_TXN_LIMIT_DEFAULT)
         .describe(`Max results (default ${PRIVATE_TXN_LIMIT_DEFAULT})`),
     },
     async (params, extra: ToolExtra) => {
@@ -486,8 +486,8 @@ export function registerUraTools(server: McpServer, state: SessionState): void {
       }
 
       let filtered = records;
-      if (ppName) filtered = filtered.filter((r) => r.ppName.toUpperCase().includes(ppName.toUpperCase()));
-      if (vehCat) filtered = filtered.filter((r) => r.vehCat.toUpperCase().includes(vehCat.toUpperCase()));
+      if (ppName) filtered = filtered.filter((r) => r.ppName?.toUpperCase().includes(ppName.toUpperCase()));
+      if (vehCat) filtered = filtered.filter((r) => r.vehCat?.toUpperCase().includes(vehCat.toUpperCase()));
 
       const truncated = filtered.slice(0, limit);
 
@@ -532,7 +532,7 @@ export function registerUraTools(server: McpServer, state: SessionState): void {
         .describe("Filter by application type (e.g. 'Change of Use', 'Subdivision', 'Addition & Alteration')"),
       decisionType: z.string().optional()
         .describe("Filter by decision type (e.g. 'Written Permission')"),
-      limit: z.number().optional().default(PRIVATE_TXN_LIMIT_DEFAULT)
+      limit: z.coerce.number().optional().default(PRIVATE_TXN_LIMIT_DEFAULT)
         .describe(`Max results (default ${PRIVATE_TXN_LIMIT_DEFAULT})`),
     },
     async (params, extra: ToolExtra) => {
@@ -558,13 +558,14 @@ export function registerUraTools(server: McpServer, state: SessionState): void {
       }
 
       let filtered = records;
-      if (address) filtered = filtered.filter((r) => r.address.toUpperCase().includes(address.toUpperCase()));
-      if (applType) filtered = filtered.filter((r) => r.applType.toUpperCase().includes(applType.toUpperCase()));
-      if (decisionType) filtered = filtered.filter((r) => r.decisionType.toUpperCase().includes(decisionType.toUpperCase()));
+      if (address) filtered = filtered.filter((r) => r.address?.toUpperCase().includes(address.toUpperCase()));
+      if (applType) filtered = filtered.filter((r) => r.applType?.toUpperCase().includes(applType.toUpperCase()));
+      if (decisionType) filtered = filtered.filter((r) => r.decisionType?.toUpperCase().includes(decisionType.toUpperCase()));
 
       // Sort by decision date descending (most recent first)
       filtered.sort((a, b) => {
-        const parseDate = (d: string) => {
+        const parseDate = (d: string | undefined) => {
+          if (!d) return 0;
           const [dd, mm, yyyy] = d.split("/");
           return parseInt(yyyy + mm + dd, 10);
         };
@@ -608,7 +609,7 @@ export function registerUraTools(server: McpServer, state: SessionState): void {
         .describe("Filter by car park name (partial match)"),
       vehCat: z.string().optional()
         .describe("Filter by vehicle category (e.g. 'Car', 'Motorcycle')"),
-      limit: z.number().optional().default(PRIVATE_TXN_LIMIT_DEFAULT)
+      limit: z.coerce.number().optional().default(PRIVATE_TXN_LIMIT_DEFAULT)
         .describe(`Max results (default ${PRIVATE_TXN_LIMIT_DEFAULT})`),
     },
     async (params, extra: ToolExtra) => {
@@ -628,8 +629,8 @@ export function registerUraTools(server: McpServer, state: SessionState): void {
       }
 
       let filtered = records;
-      if (ppName) filtered = filtered.filter((r) => r.ppName.toUpperCase().includes(ppName.toUpperCase()));
-      if (vehCat) filtered = filtered.filter((r) => r.vehCat.toUpperCase().includes(vehCat.toUpperCase()));
+      if (ppName) filtered = filtered.filter((r) => r.ppName?.toUpperCase().includes(ppName.toUpperCase()));
+      if (vehCat) filtered = filtered.filter((r) => r.vehCat?.toUpperCase().includes(vehCat.toUpperCase()));
 
       const truncated = filtered.slice(0, limit);
 

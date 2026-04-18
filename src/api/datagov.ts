@@ -1,7 +1,7 @@
 // data.gov.sg client — HDB resale flat prices (2017 onwards).
 // Free, no API key. CKAN datastore API.
 
-import { DATAGOV_URL, HDB_RESALE_RESOURCE_ID } from "../config.js";
+import { DATAGOV_URL, HDB_RESALE_RESOURCE_ID, DATAGOV_DELAY_MS } from "../config.js";
 import { HdbResaleRecord } from "../types.js";
 import { datagovLimiter } from "../rate-limiter.js";
 
@@ -63,6 +63,10 @@ export async function queryHdbResale(
   let data: DataGovResponse | undefined;
 
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    if (DATAGOV_DELAY_MS > 0) {
+      if (onWait) await onWait(DATAGOV_DELAY_MS);
+      await new Promise<void>((r) => setTimeout(r, DATAGOV_DELAY_MS));
+    }
     await datagovLimiter.wait(onWait);
 
     let response: Response;

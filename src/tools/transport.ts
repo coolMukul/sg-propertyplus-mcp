@@ -41,13 +41,13 @@ export function registerTransportTools(server: McpServer, state: SessionState): 
     "search_nearest_transport",
     "Find the nearest bus stops and taxi stands around a coordinate in Singapore. Returns bus stop codes (for looking up live arrival times), road names, and taxi stand locations sorted by distance.",
     {
-      latitude: z.number().min(-90).max(90)
+      latitude: z.coerce.number().min(-90).max(90)
         .describe("Latitude of the search center point"),
-      longitude: z.number().min(-180).max(180)
+      longitude: z.coerce.number().min(-180).max(180)
         .describe("Longitude of the search center point"),
-      radiusMeters: z.number().optional().default(RADIUS_DEFAULT)
+      radiusMeters: z.coerce.number().optional().default(RADIUS_DEFAULT)
         .describe(`Search radius in meters (default ${RADIUS_DEFAULT}, max 5000)`),
-      limit: z.number().optional().default(20)
+      limit: z.coerce.number().optional().default(20)
         .describe("Max results per category (default 20)"),
     },
     async (params, extra: ToolExtra) => {
@@ -169,11 +169,11 @@ export function registerTransportTools(server: McpServer, state: SessionState): 
     "search_taxi_availability",
     "Check how many taxis are currently available for hire near a coordinate in Singapore. Shows real-time count and distance to the nearest available taxi.",
     {
-      latitude: z.number().min(-90).max(90)
+      latitude: z.coerce.number().min(-90).max(90)
         .describe("Latitude of the search center point"),
-      longitude: z.number().min(-180).max(180)
+      longitude: z.coerce.number().min(-180).max(180)
         .describe("Longitude of the search center point"),
-      radiusMeters: z.number().optional().default(2000)
+      radiusMeters: z.coerce.number().optional().default(2000)
         .describe("Search radius in meters (default 2000, max 5000)"),
     },
     async (params, extra: ToolExtra) => {

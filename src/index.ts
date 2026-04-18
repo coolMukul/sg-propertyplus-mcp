@@ -18,6 +18,10 @@ import { registerExportTools } from "./tools/export.js";
 import { registerUraTools } from "./tools/ura.js";
 import { registerAmenityTools } from "./tools/amenities.js";
 import { registerTransportTools } from "./tools/transport.js";
+import { registerSchoolTools } from "./tools/schools.js";
+import { registerCompareTools } from "./tools/compare.js";
+import { registerStampDutyTools } from "./tools/stamp-duty.js";
+import { registerDemographicsTools } from "./tools/demographics.js";
 import { registerAttributionTools } from "./tools/attribution.js";
 import { registerResources } from "./resources.js";
 import { startHttpServer } from "./http-server.js";
@@ -37,6 +41,10 @@ async function main() {
     registerUraTools(server, stdioState);
     registerAmenityTools(server, stdioState);
     registerTransportTools(server, stdioState);
+    registerSchoolTools(server, stdioState);
+    registerCompareTools(server);
+    registerStampDutyTools(server);
+    registerDemographicsTools(server, stdioState);
     registerAttributionTools(server);
     registerResources(server, stdioState);
 

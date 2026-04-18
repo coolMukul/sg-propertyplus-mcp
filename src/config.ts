@@ -29,6 +29,16 @@ export const DATAGOV_URL =
 export const HDB_RESALE_RESOURCE_ID =
   process.env.HDB_RESALE_RESOURCE_ID || "f1765b54-a209-4718-8d38-a39237f502b3";
 
+// data.gov.sg — General Information of Schools (MOE)
+export const SCHOOL_RESOURCE_ID =
+  process.env.SCHOOL_RESOURCE_ID || "d_688b934f82c1059ed0a6993d2a829089";
+
+// Additional delay (ms) before each data.gov.sg API call.
+// Applied ON TOP of the 500ms rate limiter interval.
+// data.gov.sg rate-limits aggressively (429 after rapid requests).
+// Default 2s; increase if you're still hitting 429s.
+export const DATAGOV_DELAY_MS = envInt("DATAGOV_DELAY_MS", 2_000);
+
 // OneMap API (Phase 6 — replaces Nominatim for SG geocoding)
 // Credentials are optional — when absent, falls back to Nominatim.
 // ONEMAP_TOKEN: paste the access token from registration (expires every 3 days).
@@ -57,6 +67,15 @@ export const OVERPASS_URL =
 export const LTA_ACCOUNT_KEY = process.env.LTA_ACCOUNT_KEY || "";
 export const LTA_BASE_URL =
   process.env.LTA_BASE_URL || "https://datamall2.mytransport.sg/ltaodataservice";
+
+// SingStat Table Builder — Singapore Department of Statistics.
+// Free, no API key. Provides demographic data by planning area (2020 Census).
+export const SINGSTAT_BASE_URL =
+  process.env.SINGSTAT_BASE_URL || "https://tablebuilder.singstat.gov.sg/api/table";
+
+// SingStat rate-limit backoff on 429/503 — 15s floor per learned practice on
+// public free APIs; shorter retries risk longer IP bans.
+export const SINGSTAT_BACKOFF_MS = envInt("SINGSTAT_BACKOFF_MS", 15_000);
 
 // Radius bounds for spatial queries (meters)
 export const RADIUS_MIN = envInt("RADIUS_MIN", 10);

@@ -11,6 +11,10 @@ import { registerExportTools } from "./tools/export.js";
 import { registerUraTools } from "./tools/ura.js";
 import { registerAmenityTools } from "./tools/amenities.js";
 import { registerTransportTools } from "./tools/transport.js";
+import { registerSchoolTools } from "./tools/schools.js";
+import { registerCompareTools } from "./tools/compare.js";
+import { registerStampDutyTools } from "./tools/stamp-duty.js";
+import { registerDemographicsTools } from "./tools/demographics.js";
 import { registerAttributionTools } from "./tools/attribution.js";
 import { registerResources } from "./resources.js";
 
@@ -36,6 +40,10 @@ export function createConfiguredServer(): McpServer {
   registerUraTools(s, state);
   registerAmenityTools(s, state);
   registerTransportTools(s, state);
+  registerSchoolTools(s, state);
+  registerCompareTools(s);
+  registerStampDutyTools(s);
+  registerDemographicsTools(s, state);
   registerAttributionTools(s);
   registerResources(s, state);
   return s;

@@ -43,8 +43,10 @@ const AMENITY_TAGS: { key: string; value: string; category: string }[] = [
 ];
 
 // Tags that appear as both nodes and ways/relations in OSM.
-// bus_stop and railway=station are almost always nodes, so skip way queries for them.
-const NODE_ONLY_CATEGORIES = new Set(["bus_stop", "mrt", "pharmacy"]);
+// bus_stop is always a node. pharmacy in SG is typically a node.
+// MRT stations in Singapore are tagged as ways (the station building polygon),
+// not nodes — so "mrt" must NOT be node-only or the query returns zero results.
+const NODE_ONLY_CATEGORIES = new Set(["bus_stop", "pharmacy"]);
 
 // --- Distance calculation ---
 
@@ -68,19 +70,27 @@ function haversineMeters(
 /**
  * Build an Overpass QL query that fetches all amenity types within a radius.
  * Uses a single union query (one API call) to avoid rate limit issues.
+ *
+ * `perCategoryRadius` lets a caller use a larger radius for specific categories
+ * in the same query — useful for things like MRT stations that are typically
+ * farther from any arbitrary street-centre coordinate than the user's main
+ * radius allows, without doubling Overpass traffic.
  */
 function buildQuery(
   lat: number,
   lon: number,
   radiusMeters: number,
   categories: string[],
+  perCategoryRadius?: Record<string, number>,
 ): string {
-  const around = `around:${radiusMeters},${lat},${lon}`;
   const categorySet = new Set(categories);
 
   const parts: string[] = [];
   for (const tag of AMENITY_TAGS) {
     if (!categorySet.has(tag.category)) continue;
+
+    const r = perCategoryRadius?.[tag.category] ?? radiusMeters;
+    const around = `around:${r},${lat},${lon}`;
 
     // Always query nodes
     parts.push(`  node["${tag.key}"="${tag.value}"](${around});`);
@@ -133,12 +143,16 @@ export async function queryNearbyAmenities(
   radiusMeters: number,
   categories: string[],
   onWait?: () => void | Promise<void>,
+  perCategoryRadius?: Record<string, number>,
 ): Promise<{ amenities: NearbyAmenity[]; error?: string }> {
-  const query = buildQuery(lat, lon, radiusMeters, categories);
+  const query = buildQuery(lat, lon, radiusMeters, categories, perCategoryRadius);
 
   // Retry with backoff on 429 (rate limited) and 504 (gateway timeout).
   // Overpass API has strict concurrency limits and intermittent gateway issues.
+  // On 504/429, sleep an extra 15s beyond the normal limiter interval so the
+  // server has time to recover before we hit it again.
   const MAX_RETRIES = 3;
+  const RETRY_BACKOFF_MS = 15_000;
   let resp: Response | undefined;
 
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
@@ -154,13 +168,19 @@ export async function queryNearbyAmenities(
         body: `data=${encodeURIComponent(query)}`,
       });
     } catch (err: any) {
-      if (attempt < MAX_RETRIES) continue;
+      if (attempt < MAX_RETRIES) {
+        console.error(`[overpass] Network error (attempt ${attempt + 1}/${MAX_RETRIES}): ${err.message} — retrying in ${RETRY_BACKOFF_MS}ms`);
+        await new Promise((r) => setTimeout(r, RETRY_BACKOFF_MS));
+        continue;
+      }
       console.error(`[overpass] Network error: ${err.message}`);
       return { amenities: [], error: "Could not reach amenity service. Retry after 30 seconds delay." };
     }
 
-    // Retry on 429 (rate limit) or 504 (gateway timeout)
+    // Retry on 429 (rate limit) or 504 (gateway timeout) with extra backoff.
     if ((resp.status === 429 || resp.status === 504) && attempt < MAX_RETRIES) {
+      console.error(`[overpass] HTTP ${resp.status} (attempt ${attempt + 1}/${MAX_RETRIES}) — retrying in ${RETRY_BACKOFF_MS}ms`);
+      await new Promise((r) => setTimeout(r, RETRY_BACKOFF_MS));
       continue;
     }
 

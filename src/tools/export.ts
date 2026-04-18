@@ -14,6 +14,7 @@ import {
   BusStopInfo,
   BusArrivalService,
   TaxiStandInfo,
+  SchoolInfo,
 } from "../types.js";
 import {
   formatLandParcelsTable, formatHdbTable,
@@ -31,6 +32,7 @@ import {
   formatBusStopTable, formatBusStopCsv,
   formatBusArrivalTable, formatBusArrivalCsv,
   formatTaxiStandTable, formatTaxiStandCsv,
+  formatSchoolTable, formatSchoolCsv,
 } from "../formatters.js";
 import { isPathAllowed } from "../roots.js";
 import { type ToolExtra, logInfo } from "../helpers.js";
@@ -124,6 +126,8 @@ export function registerExportTools(server: McpServer, state: SessionState): voi
           csv = formatBusArrivalCsv(lastSearch.results as BusArrivalService[]); break;
         case "taxi-availability":
           csv = formatTaxiStandCsv(lastSearch.results as TaxiStandInfo[]); break;
+        case "school-info":
+          csv = formatSchoolCsv(lastSearch.results as SchoolInfo[]); break;
         default:
           csv = formatHdbCsv(lastSearch.results as HdbResaleRecord[]); break;
       }
@@ -263,6 +267,8 @@ export function registerExportTools(server: McpServer, state: SessionState): voi
           table = formatBusArrivalTable(lastSearch.results as BusArrivalService[]); break;
         case "taxi-availability":
           table = formatTaxiStandTable(lastSearch.results as TaxiStandInfo[]); break;
+        case "school-info":
+          table = formatSchoolTable(lastSearch.results as SchoolInfo[]); break;
         default:
           table = formatHdbTable(lastSearch.results as HdbResaleRecord[]); break;
       }
@@ -285,6 +291,7 @@ export function registerExportTools(server: McpServer, state: SessionState): voi
         "nearest-transport": "Nearest Transport",
         "bus-arrival": "Bus Arrival Times",
         "taxi-availability": "Taxi Stands",
+        "school-info": "School Directory",
       };
       const heading = headingMap[lastSearch.type] ?? "Results";
 
@@ -305,6 +312,7 @@ export function registerExportTools(server: McpServer, state: SessionState): voi
         "nearest-transport": "Contains information from LTA DataMall",
         "bus-arrival": "Contains information from LTA DataMall",
         "taxi-availability": "Contains information from LTA DataMall",
+        "school-info": "Contains information from data.gov.sg accessed under the Singapore Open Data Licence",
       };
       const attribution = attributionMap[lastSearch.type] ?? uraAttribution;
 

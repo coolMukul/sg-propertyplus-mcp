@@ -22,11 +22,11 @@ export function registerAmenityTools(server: McpServer, state: SessionState): vo
     "search_nearby_amenities",
     "Search for nearby amenities (schools, hospitals, clinics, hawker centres, parks, MRT stations, bus stops, supermarkets, pharmacies) around a coordinate in Singapore. Returns results sorted by distance. Requires coordinates — use search_area first to geocode an address if needed.",
     {
-      latitude: z.number().min(-90).max(90)
+      latitude: z.coerce.number().min(-90).max(90)
         .describe("Latitude of the search center point"),
-      longitude: z.number().min(-180).max(180)
+      longitude: z.coerce.number().min(-180).max(180)
         .describe("Longitude of the search center point"),
-      radiusMeters: z.number().optional().default(RADIUS_DEFAULT)
+      radiusMeters: z.coerce.number().optional().default(RADIUS_DEFAULT)
         .describe(`Search radius in meters (default ${RADIUS_DEFAULT}, max 5000)`),
       categories: z.array(z.enum([
         "school", "hospital", "clinic", "food_court", "marketplace",
@@ -36,7 +36,7 @@ export function registerAmenityTools(server: McpServer, state: SessionState): vo
           "Filter by amenity categories. If omitted, searches all types. " +
           "Options: school, hospital, clinic, food_court, marketplace, park, mrt, bus_stop, supermarket, pharmacy",
         ),
-      limit: z.number().optional().default(DEFAULT_AMENITY_LIMIT)
+      limit: z.coerce.number().optional().default(DEFAULT_AMENITY_LIMIT)
         .describe(`Max results to return (default ${DEFAULT_AMENITY_LIMIT})`),
     },
     async (params, extra: ToolExtra) => {
