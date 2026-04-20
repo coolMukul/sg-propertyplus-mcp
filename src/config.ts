@@ -34,47 +34,33 @@ export const SCHOOL_RESOURCE_ID =
   process.env.SCHOOL_RESOURCE_ID || "d_688b934f82c1059ed0a6993d2a829089";
 
 // Additional delay (ms) before each data.gov.sg API call.
-// Applied ON TOP of the 500ms rate limiter interval.
-// data.gov.sg rate-limits aggressively (429 after rapid requests).
-// Default 2s; increase if you're still hitting 429s.
 export const DATAGOV_DELAY_MS = envInt("DATAGOV_DELAY_MS", 2_000);
 
-// OneMap API (Phase 6 — replaces Nominatim for SG geocoding)
-// Credentials are optional — when absent, falls back to Nominatim.
-// ONEMAP_TOKEN: paste the access token from registration (expires every 3 days).
-// ONEMAP_EMAIL + ONEMAP_PASSWORD: used for automatic token refresh when the token expires.
+// OneMap API
 export const ONEMAP_TOKEN = process.env.ONEMAP_TOKEN || "";
 export const ONEMAP_EMAIL = process.env.ONEMAP_EMAIL || "";
 export const ONEMAP_PASSWORD = process.env.ONEMAP_PASSWORD || "";
 export const ONEMAP_BASE_URL =
   process.env.ONEMAP_BASE_URL || "https://www.onemap.gov.sg";
 
-// URA Data Service (Phase 7 — free registration at https://eservice.ura.gov.sg/maps/api/reg.html)
-// Private property transactions and rental data.
-// AccessKey is permanent. Token refreshes daily via insertNewToken/v1.
+// URA Data Service 
 export const URA_ACCESS_KEY = process.env.URA_ACCESS_KEY || "";
 export const URA_BASE_URL =
   process.env.URA_BASE_URL || "https://eservice.ura.gov.sg/uraDataService";
 
-// Overpass API (OpenStreetMap) — nearby amenities (Phase 8)
-// Free, no key. Uses OSM data under ODbL license.
+// Overpass API (OpenStreetMap)
 export const OVERPASS_URL =
   process.env.OVERPASS_URL || "https://overpass-api.de/api/interpreter";
 
-// LTA DataMall (Phase 9 — free registration at https://datamall.lta.gov.sg)
-// Transport data: bus stops, bus arrival, taxi availability/stands.
-// AccountKey is permanent, sent via header.
+// LTA DataMall
 export const LTA_ACCOUNT_KEY = process.env.LTA_ACCOUNT_KEY || "";
 export const LTA_BASE_URL =
   process.env.LTA_BASE_URL || "https://datamall2.mytransport.sg/ltaodataservice";
 
-// SingStat Table Builder — Singapore Department of Statistics.
-// Free, no API key. Provides demographic data by planning area (2020 Census).
+// SingStat Table Builder
 export const SINGSTAT_BASE_URL =
   process.env.SINGSTAT_BASE_URL || "https://tablebuilder.singstat.gov.sg/api/table";
 
-// SingStat rate-limit backoff on 429/503 — 15s floor per learned practice on
-// public free APIs; shorter retries risk longer IP bans.
 export const SINGSTAT_BACKOFF_MS = envInt("SINGSTAT_BACKOFF_MS", 15_000);
 
 // Radius bounds for spatial queries (meters)
@@ -86,19 +72,17 @@ export const RADIUS_DEFAULT = envInt("RADIUS_DEFAULT", 50);
 export const HDB_LIMIT_DEFAULT = envInt("HDB_LIMIT_DEFAULT", 10);
 export const ARCGIS_RESULT_LIMIT = envInt("ARCGIS_RESULT_LIMIT", 50);
 
-// Default result limits for private property queries
-export const PRIVATE_TXN_LIMIT_DEFAULT = envInt("PRIVATE_TXN_LIMIT_DEFAULT", 20);
+// Default result limits for private property queries (Optimized for MCP/LLM Context)
+export const PRIVATE_TXN_LIMIT_DEFAULT = envInt("PRIVATE_TXN_LIMIT_DEFAULT", 40);
 
-// Sampling defaults (Phase 3 — analyze_results tool)
+// Sampling defaults
 export const SAMPLING_MAX_TOKENS = envInt("SAMPLING_MAX_TOKENS", 2048);
 
-// Transport (Phase 5 — Streamable HTTP)
-// TRANSPORT: "stdio" (default) or "http"
-// HTTP_MODE: "stateful" (default) or "stateless"
+// Transport
 export const TRANSPORT = (process.env.TRANSPORT || "stdio") as "stdio" | "http";
 export const HTTP_MODE = (process.env.HTTP_MODE || "stateful") as
   | "stateful"
   | "stateless";
 export const HTTP_PORT = envInt("HTTP_PORT", 3000);
 export const HTTP_HOST = process.env.HTTP_HOST || "127.0.0.1";
-export const HTTP_SESSION_TTL_SECONDS = envInt("HTTP_SESSION_TTL_SECONDS", 1800); // 30 min default
+export const HTTP_SESSION_TTL_SECONDS = envInt("HTTP_SESSION_TTL_SECONDS", 1800);
