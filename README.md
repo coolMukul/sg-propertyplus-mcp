@@ -2,7 +2,7 @@
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-green.svg) ![Node](https://img.shields.io/badge/Node-18%2B-brightgreen) ![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue) ![MCP SDK](https://img.shields.io/badge/MCP%20SDK-1.29-blueviolet) ![Singapore](https://img.shields.io/badge/Singapore-Property%20Data-red)
 
-**The most comprehensive Singapore property MCP server.** A TypeScript Model Context Protocol (MCP) server with 21 tools, 7 government data sources, advanced MCP features (sampling, roots, resources, progress notifications), and dual transports (stdio + Streamable HTTP).
+**The most comprehensive Singapore property MCP server.** A TypeScript Model Context Protocol (MCP) server with 25 tools, 7 government data sources, advanced MCP features (sampling, roots, resources, progress notifications), and dual transports (stdio + Streamable HTTP).
 
 `sg-propertyplus-mcp` gives AI assistants (Claude, GPT, and any MCP-compatible client) real-time, authoritative access to Singapore's property and investment data ecosystem — URA, HDB, LTA, OneMap, SingStat, OSM, and MOE — in a single well-typed server.
 
